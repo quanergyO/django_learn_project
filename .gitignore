@@ -1,0 +1,4 @@
+*.idea
+*.pyc
+*selfedu\players\__pycache__
+*venv
