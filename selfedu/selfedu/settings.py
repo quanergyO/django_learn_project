@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'debug_toolbar',
     'captcha',
     'players.apps.PlayersConfig',
-
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -141,4 +141,16 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
         'LOCATION': os.path.join(BASE_DIR, 'coolsite_cache'),
     }
+}
+
+SILENCED_SYSTEM_CHECKS = []
+if DEBUG:
+  SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ]
 }

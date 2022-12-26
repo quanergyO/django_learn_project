@@ -16,14 +16,30 @@ Including another URLconf
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
-from players.views import pageNotFound
 from selfedu import settings
+from players.views import pageNotFound, PlayerAPIList, PlayerAPIUpdate, PlayerAPIDetailView, PlayerViewSet
+from players.views import PlayerAPIView, PlayerAPIViewV2
+from rest_framework import routers
+
+
+router = routers.SimpleRouter()
+router.register(r'player', PlayerViewSet, basename='player ')
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('captcha/', include('captcha.urls')),
     path('', include('players.urls')),
+    path('api/v1/playerlist/', PlayerAPIView.as_view()),
+    path('api/v2/playerlist/', PlayerAPIViewV2.as_view()),
+    path('api/v2/playerlist/<int:pk>/', PlayerAPIViewV2.as_view()),
+    path('api/v3/playerlist/', PlayerAPIList.as_view()),
+    path('api/v3/playerlist/<int:pk>/', PlayerAPIUpdate.as_view()),
+    path('api/v3/playerdetail/<int:pk>/', PlayerAPIDetailView.as_view()),
+    path('api/v4/playerdetail/', PlayerViewSet.as_view({'get': 'list'})),
+    path('api/v4/playerdetail/<int:pk>/', PlayerViewSet.as_view({'put': 'update'})),
+    path('api/v5/', include(router.urls)),
+
 ]
 
 if settings.DEBUG:

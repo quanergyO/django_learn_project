@@ -1,3 +1,5 @@
+import os.path
+
 from django.contrib.auth import logout, login
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect, get_object_or_404
@@ -5,9 +7,14 @@ from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from rest_framework import generics, viewsets
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.decorators import action
 
 from .forms import AddPostForm, RegisterUserForm, LoginUserForm, ContactForm
 from .models import *
+from .serializers import PlayerSerializer
 from .utils import DataMixin
 
 
@@ -173,4 +180,89 @@ def logout_user(request):
 
 def pageNotFound(request, exception):
     return HttpResponseNotFound('Страница не найдена')
+
+
+class PlayerViewSet(viewsets.ModelViewSet):
+    serializer_class = PlayerSerializer
+
+    def get_queryset(self):
+        pk = self.kwargs.get('pk')
+
+        if not pk:
+            return Player.objects.all()[:3]
+
+        return Player.objects.filter(pk=pk)
+
+    @action(methods=['get'], detail=True)
+    def category(self, request, pk=None):
+        cats = Category.objects.get(pk=pk)
+        return Response({'cats': cats.name})
+
+
+class PlayerAPIList(generics.ListCreateAPIView):
+    queryset = Player.objects.all()
+    serializer_class = PlayerSerializer
+
+
+class PlayerAPIUpdate(generics.RetrieveUpdateAPIView):
+    queryset = Player.objects.all()
+    serializer_class = PlayerSerializer
+
+
+class PlayerAPIDestroy(generics.RetrieveDestroyAPIView):
+    queryset = Player.objects.all()
+    serializer_class = PlayerSerializer
+
+
+class PlayerAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Player.objects.all()
+    serializer_class = PlayerSerializer
+
+
+class PlayerAPIView(generics.ListAPIView):
+    queryset = Player.objects.all()
+    serializer_class = PlayerSerializer
+
+
+class PlayerAPIViewV2(APIView):
+    def get(self, request):
+        p = Player.objects.all()
+        return Response({'posts': PlayerSerializer(p, many=True).data})
+
+    def post(self, request):
+        serializer = PlayerSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({'post': serializer.data})
+
+    def put(self, request, *args, **kwargs):
+        pk = kwargs.get("pk", None)
+        if not pk:
+            return Response({"error": "Method PUT not allowed"})
+
+        try:
+            instance = Player.objects.get(pk=pk)
+        except:
+            return Response({"error": "Object does not exists"})
+
+        serializer = PlayerSerializer(data=request.data, instance=instance)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'post': serializer.data})
+
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get("pk", None)
+        if not pk:
+            return Response({"error": "Method DELETE not allowed"})
+
+        try:
+            instance = Player.objects.get(pk=pk)
+        except:
+            return Response({"error": "Object does not exists"})
+
+        instance.delete()
+
+        return Response({"post": "delete post" + str(pk)})
+
 
