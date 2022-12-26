@@ -5,3 +5,4 @@
 *venv
 selfedu/db.sqlite3
 selfedu/db.sqlite3
+*.sqlite3
