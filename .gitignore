@@ -4,3 +4,4 @@
 *.idea
 *venv
 selfedu/db.sqlite3
+selfedu/db.sqlite3
